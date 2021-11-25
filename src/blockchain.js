@@ -160,7 +160,7 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             //filter block if block contains hash or not
-            let block = self.chain.filter((block, index) => block.hash == hash ? block : '');
+            let block = self.chain.find((block) => block.hash == hash ? block : '');
             //resolve block if hash found or reject with error if hash not found
             if (block && block != 'undefined')
                 resolve(block)
@@ -222,10 +222,13 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise((resolve) => {
-            let validatePromises = [];
             //all block iteration
-            self.chain.forEach((block, index) => {
+            self.chain.map(async (block, index) => {
                 //escaping for genesis block
+                let blockIsValid = await block.validate();
+                if (!blockIsValid) {
+                    errorLog.push(`Block height ${index} is not valid`);
+                }
                 if (block.height > 0) {
                     //get previous block hash
                     const previousBlockHash = self.chain[index - 1].hash;
